@@ -10,7 +10,7 @@ The Weekly Planner lets you organize tasks by local calendar date, schedule task
 
 Use Omerta Focus Planner directly in your browser:
 
-**https://haytham-hammioui.github.io/Omerta_Focus_Timer/**
+**https://haytham-hammioui.github.io/Omerta_Focus_Planner/**
 
 No installation is required.
 
@@ -32,7 +32,7 @@ No installation is required.
 
 ## 🚀 Usage
 
-1. Open the [live website](https://haytham-hammioui.github.io/Omerta_Focus_Timer/).
+1. Open the [live website](https://haytham-hammioui.github.io/Omerta_Focus_Planner/).
 2. Choose `25`, `45`, `60`, or enter a custom number of minutes.
 3. Select **Start** to begin your focus session.
 4. Use the **fullscreen button** or press `F` to focus on the analog clock.
@@ -48,8 +48,8 @@ Planner tasks are saved on this browser and device under the `omerta-planner-tas
 ### Option 1 — Open directly
 
 ```bash
-git clone https://github.com/haytham-hammioui/Omerta_Focus_Timer.git
-cd Omerta_Focus_Timer
+git clone https://github.com/haytham-hammioui/Omerta_Focus_Planner.git
+cd Omerta_Focus_Planner
 ```
 
 Then open `index.html` in a modern browser.
@@ -75,7 +75,7 @@ npx serve .
 ## 📁 Project Structure
 
 ```text
-Omerta_Focus_Timer/
+Omerta_Focus_Planner/
 ├── index.html
 ├── style.css
 ├── app.js
