@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#111315" />
-  <title>Omerta Focus Timer</title>
+  <title>Omerta Focus Planner</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,23 +12,13 @@
     <header>
       <div class="brand">
         <span class="brand-dot"></span>
-        <span>OMERTA FOCUS TIMER</span>
+        <span>OMERTA FOCUS PLANNER</span>
       </div>
       <div class="header-actions">
+        <button id="plannerToggle" class="planner-toggle" type="button" aria-expanded="false" aria-controls="weeklyPlanner">Weekly Planner</button>
         <button id="themeToggle" class="icon-btn" type="button" aria-label="Switch to light mode" title="Switch to light mode">☀</button>
       </div>
     </header>
-
-    <section class="wake-row">
-      <div>
-        <div class="wake-title"><span id="wakeStatus" class="status-dot"></span> Keep Screen On</div>
-        <p id="wakeHint">Prevent your display from sleeping while you study.</p>
-      </div>
-      <label class="switch" aria-label="Keep screen on">
-        <input id="wakeToggle" type="checkbox">
-        <span class="slider"></span>
-      </label>
-    </section>
 
     <section class="clock-wrap" aria-label="Analog clock">
       <div class="clock-stage">
@@ -53,6 +43,8 @@
     <section class="timer">
       <div class="mode">FOCUS SESSION</div>
       <div id="timerDisplay" class="time" aria-live="polite">25:00</div>
+      <p id="focusTaskLabel" class="focus-task-label" aria-live="polite"></p>
+      <button id="completeFocusTask" class="text-btn focus-complete-btn" type="button" hidden></button>
 
       <div class="presets" aria-label="Timer presets">
         <button data-minutes="25" class="preset active">25</button>
@@ -70,6 +62,133 @@
       </div>
       <p id="timerMessage" class="message" aria-live="polite"></p>
     </section>
+
+    <section id="weeklyPlanner" class="planner hidden" aria-labelledby="plannerHeading" hidden>
+      <div class="planner-heading">
+        <div>
+          <div class="mode">PLAN YOUR WEEK</div>
+          <h1 id="plannerHeading" tabindex="-1">Weekly Planner</h1>
+        </div>
+        <div class="week-controls" aria-label="Week navigation">
+          <button id="previousWeek" class="secondary compact-btn" type="button">Previous Week</button>
+          <button id="todayButton" class="secondary compact-btn" type="button">Today</button>
+          <button id="nextWeek" class="secondary compact-btn" type="button">Next Week</button>
+        </div>
+      </div>
+
+      <div id="weekLabel" class="week-label"></div>
+      <p class="planner-location">Selected day: <strong id="plannerLocation"></strong> <span>· Local time</span></p>
+      <div id="weekDays" class="week-days" role="group" aria-label="Days of the week"></div>
+      <div class="selected-day-heading">
+        <div>
+          <h2 id="selectedDateHeading"></h2>
+          <div id="plannerStatus" class="planner-status" aria-live="polite"></div>
+        </div>
+        <button id="addTaskButton" class="primary compact-btn" type="button">+ Add task</button>
+      </div>
+      <div class="planner-tools">
+        <p id="storageLocation">Tasks are saved in this browser on this device.</p>
+        <button id="exportTasks" class="secondary compact-btn" type="button">Export backup</button>
+        <button id="importTasks" class="secondary compact-btn" type="button">Import backup</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+      </div>
+      <div id="recoveryPanel" class="recovery-panel" hidden>
+        <p id="recoveryMessage"></p>
+        <button id="exportRawData" class="secondary compact-btn" type="button">Download original saved data</button>
+      </div>
+
+      <div class="planner-view-switch" role="tablist" aria-label="Planner view">
+        <button class="planner-tab active" id="tasksTab" type="button" role="tab" aria-selected="true" aria-controls="plannerTasks">Tasks</button>
+        <button class="planner-tab" id="scheduleTab" type="button" role="tab" aria-selected="false" aria-controls="plannerSchedule">Schedule</button>
+      </div>
+
+      <div class="planner-content" data-view="tasks">
+        <section id="plannerTasks" class="task-panel" role="tabpanel" aria-labelledby="tasksTab">
+          <h3>To-do list</h3>
+          <div id="taskList"></div>
+        </section>
+        <section id="plannerSchedule" class="schedule-panel" role="tabpanel" aria-labelledby="scheduleTab">
+          <h3>Daily schedule <span>· Select a time to plan a task</span></h3>
+          <div id="timeline" class="timeline" aria-label="Daily timeline"></div>
+        </section>
+      </div>
+    </section>
+
+    <dialog id="taskDialog" class="planner-dialog" aria-labelledby="taskDialogHeading">
+      <form id="taskForm" method="dialog">
+        <h2 id="taskDialogHeading">Add a task</h2>
+        <label for="taskTitle">Task name</label>
+        <input id="taskTitle" name="title" type="text" maxlength="120" required autocomplete="off">
+        <label for="taskDate">Day</label>
+        <input id="taskDate" name="date" type="date" required>
+        <div class="time-fields">
+          <div>
+            <label for="taskStart">Start time (optional)</label>
+            <input id="taskStart" name="start" type="time" step="60">
+          </div>
+          <div>
+            <label for="taskEnd">End time (optional)</label>
+            <input id="taskEnd" name="end" type="time" step="60">
+          </div>
+        </div>
+        <div id="taskConflict" class="schedule-conflict" aria-live="polite"></div>
+        <label id="taskOverlapLabel" class="overlap-confirm" hidden>
+          <input id="taskOverlapConfirm" type="checkbox">
+          Save this overlapping schedule anyway
+        </label>
+        <p id="taskFormError" class="form-error" aria-live="polite"></p>
+        <div class="dialog-actions">
+          <button id="cancelTask" class="secondary" type="button">Cancel</button>
+          <button class="primary" type="submit">Save task</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="scheduleDialog" class="planner-dialog" aria-labelledby="scheduleDialogHeading">
+      <form id="scheduleForm" method="dialog">
+        <h2 id="scheduleDialogHeading">Schedule a task</h2>
+        <label for="scheduleTask">Task</label>
+        <select id="scheduleTask" name="task"></select>
+        <div id="newTaskFields" class="new-task-fields" hidden>
+          <label for="newScheduledTitle">New task name</label>
+          <input id="newScheduledTitle" type="text" maxlength="120" autocomplete="off">
+        </div>
+        <label for="scheduleDate">Day</label>
+        <input id="scheduleDate" name="date" type="date" required>
+        <div class="time-fields">
+          <div>
+            <label for="scheduleStart">Start</label>
+            <input id="scheduleStart" name="start" type="time" step="60" required>
+          </div>
+          <div>
+            <label for="scheduleEnd">End</label>
+            <input id="scheduleEnd" name="end" type="time" step="60" required>
+          </div>
+        </div>
+        <div id="scheduleConflict" class="schedule-conflict" aria-live="polite"></div>
+        <label id="overlapConfirmLabel" class="overlap-confirm" hidden>
+          <input id="overlapConfirm" type="checkbox">
+          Save this overlapping schedule anyway
+        </label>
+        <p id="scheduleFormError" class="form-error" aria-live="polite"></p>
+        <div class="dialog-actions">
+          <button id="cancelSchedule" class="secondary" type="button">Cancel</button>
+          <button class="primary" type="submit">Save schedule</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="importDialog" class="planner-dialog" aria-labelledby="importDialogHeading">
+      <form method="dialog">
+        <h2 id="importDialogHeading">Replace planner tasks?</h2>
+        <p id="importPreview"></p>
+        <p class="dialog-note">This replaces the current planner task list only after you confirm. Theme and timer settings are not affected.</p>
+        <div class="dialog-actions">
+          <button id="cancelImport" class="secondary" type="button">Cancel</button>
+          <button id="confirmImport" class="primary" type="button">Replace tasks</button>
+        </div>
+      </form>
+    </dialog>
 
     <footer>
       Developed by <strong>Omerta</strong>
